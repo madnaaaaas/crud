@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  crud:
+    container_name: 'crud'
+    build:
+      dockerfile: 'local/Dockerfile'
+      context: '../.'
+    volumes:
+      - '../.:/go/src/app/server'
+    depends_on:
+      - 'postgres'
+    ports:
+      - '3300:3300'
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "crud"
+      POSTGRES_USER: "crud"
+      POSTGRES_PASSWORD: "crud"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ../sql:/docker-entrypoint-initdb.d
+      - .:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
