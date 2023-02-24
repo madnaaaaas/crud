@@ -10,6 +10,7 @@ type Config struct {
 	PGPassword string `env:"PG_PASSWORD" envDefault:"crud"`
 	PGDatabase string `env:"PG_DATABASE" envDefault:"crud"`
 
+	LogLevel   string `env:"LOG_LEVEL" envDefault:"debug"`
 	ServerPort string `env:"SERVER_PORT" envDefault:"3300"`
 }
 

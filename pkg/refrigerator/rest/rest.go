@@ -2,12 +2,12 @@ package rest
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/madnaaaaas/crud/pkg/refrigerator"
+	"github.com/madnaaaaas/crud/pkg/utils"
 )
 
 type rest struct {
@@ -24,7 +24,7 @@ func (r *rest) Register(api *gin.RouterGroup) {
 		route.GET(":title", r.getBeerByTitle)
 		route.POST("", r.postBeer)
 		route.GET("echo", func(c *gin.Context) {
-			c.JSON(http.StatusOK, "echo")
+			utils.PublishData(c, "echo")
 		})
 	}
 }
@@ -33,42 +33,38 @@ func (r *rest) getBeerByTitle(c *gin.Context) {
 	ctx := c.Request.Context()
 	title := c.Param("title")
 	if title == "" {
-		c.JSON(http.StatusBadRequest, errors.New("empty title"))
+		utils.PublishError(c, errors.New("empty title"), http.StatusBadRequest)
 		return
 	}
 
 	beer, err := r.service.GetBeerByTitle(ctx, title)
 	if err != nil {
-		fmt.Println(err)
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		utils.PublishError(c, err, http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, beerDomainToVM(beer))
+	utils.PublishData(c, beerDomainToVM(beer))
 }
 
 func (r *rest) postBeer(c *gin.Context) {
 	ctx := c.Request.Context()
 	vm := new(postBeerVM)
 	if err := c.ShouldBindJSON(vm); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, err)
+		utils.PublishError(c, err, http.StatusBadRequest)
 		return
 	}
 
 	newBeer, err := postBeerVMToDomain(vm)
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, err)
+		utils.PublishError(c, err, http.StatusBadRequest)
 		return
 	}
 
 	id, err := r.service.InsertBeer(ctx, newBeer)
 	if err != nil {
-		fmt.Println(err)
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		utils.PublishError(c, err, http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, id)
+	utils.PublishData(c, id)
 }
