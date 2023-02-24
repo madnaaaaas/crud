@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-pg/pg"
 
 	"github.com/madnaaaaas/crud/pkg/refrigerator"
@@ -17,10 +18,14 @@ func NewRepo(db *pg.DB) *repo {
 
 func (r *repo) GetBeerByTitle(ctx context.Context, title string) (*refrigerator.Beer, error) {
 	var res beer
-	_, err := r.db.QueryContext(ctx, &res,
+	queryRes, err := r.db.QueryContext(ctx, &res,
 		`SELECT * FROM beer
 			   WHERE title = ?`,
 		title)
+
+	if queryRes.RowsReturned() == 0 {
+		return nil, fmt.Errorf("beer with title \"%s\" not found in bd", title)
+	}
 
 	if err != nil {
 		return nil, err
